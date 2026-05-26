@@ -1,0 +1,68 @@
+/* Design System Variables */
+:root {
+  /* Colors */
+  --primary-bg: #FAF9F3;      /* 전체 메인 배경 (Cream) */
+  --surface-white: #FFFFFF;    /* 카드 및 컴포넌트 표면색 */
+  
+  --accent-sand: #C0BCAC;     /* 아이콘, 중요 스트로크, 포인트 컬러 */
+  --accent-sand-light: #D9D6CB; /* 약한 포인트나 구분선 */
+  
+  --text-primary: #000000;    /* 메인 텍스트 */
+  --text-secondary: #898989;  /* 부가 설명 및 비활성 메뉴 (Grey) */
+  
+  /* Radii */
+  --radius-lg: 20px;
+  
+  /* Effects */
+  --shadow-base: 0 4px 4px rgba(0, 0, 0, 0.25);
+  
+  /* Accessibility */
+  --touch-target-min: 44px;
+  --font-size-min: 14px;
+
+  /* Breakpoints */
+  --breakpoint-mobile: 767px;
+  --breakpoint-tablet: 1023px;
+  --breakpoint-desktop: 1024px;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-size: 16px; /* Default font size */
+  -webkit-font-smoothing: antialiased;
+}
+
+button, a {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: inherit;
+}
+
+/* Accessibility: Ensure text doesn't get too small */
+span, p, small, label {
+  font-size: clamp(var(--font-size-min), 1rem, 2rem);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
