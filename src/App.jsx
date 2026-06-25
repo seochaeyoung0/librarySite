@@ -20,8 +20,12 @@ function App() {
   const [showLectureDetail, setShowLectureDetail] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showMySpace, setShowMySpace] = useState(false);
+  const [expandedFooterMenu, setExpandedFooterMenu] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedLecture, setSelectedLecture] = useState(null);
+  const [lectureTab, setLectureTab] = useState('전체');
+  const [currentLectureIdx, setCurrentLectureIdx] = useState(0);
+  const [bookTab, setBookTab] = useState('추천도서');
 
   const books = [
     { title: "불편한 편의점", author: "김호연 저 | 나무옆의자", img: `${import.meta.env.BASE_URL}book_cover.png` },
@@ -36,6 +40,22 @@ function App() {
     { title: "아몬드", author: "손원평 지음 | 창비", img: `${import.meta.env.BASE_URL}book_rec4.png` },
     { title: "하얼빈", author: "김훈 지음 | 문학동네", img: `${import.meta.env.BASE_URL}book_rec5.png` },
   ];
+
+  const getFilteredBooks = () => {
+    if (bookTab === '신착도서') return [...books].reverse();
+    if (bookTab === '인기도서') return [...books.slice(5), ...books.slice(0, 5)];
+    return books;
+  };
+  const displayBooks = getFilteredBooks();
+
+  const handleBookTab = (tab) => {
+    setBookTab(tab);
+    setCurrentBookIdx(0);
+  };
+
+  const toggleFooterMenu = (title) => {
+    setExpandedFooterMenu(prev => prev === title ? null : title);
+  };
 
   const schematicImages = [
     { id: 1, img: `${import.meta.env.BASE_URL}schematic1.png`, title: "스마트 열람실 안내" },
@@ -55,10 +75,38 @@ function App() {
     { id: 2, library: "서울도서관", title: "[어린이] 창의력 쑥쑥 종이접기", date: "2026.05.20 ~ 2026.06.15", target: "만 7세 ~ 만 12세", status: "접수중", location: "어린이실", instructor: "김종이 작가", fee: "무료" },
     { id: 3, library: "강남구립도서관", title: "[성인] 힐링 캘리그라피 기초", date: "2026.06.01 ~ 2026.08.31", target: "만 19세 이상", status: "접수중", location: "문화교실 1", instructor: "이글씨 강사", fee: "10,000원" },
     { id: 4, library: "동작상도국어절도서관", title: "[가족] 주말 그림책 구연 동화", date: "2026.05.10 ~ 2026.05.31", target: "제한없음", status: "접수중", location: "다목적실", instructor: "박동화 성우", fee: "무료" },
+    { id: 5, library: "마포평생학습관", title: "[청소년] 코딩으로 배우는 인공지능", date: "2026.07.01 ~ 2026.07.31", target: "중고등학생", status: "접수예정", location: "디지털실", instructor: "박코딩", fee: "무료" },
+    { id: 6, library: "서대문이진아도서관", title: "[성인] 인문학 산책: 서양미술사", date: "2026.07.10 ~ 2026.08.10", target: "만 19세 이상", status: "접수예정", location: "다목적실", instructor: "최미술", fee: "5,000원" },
+    { id: 7, library: "송파글마루도서관", title: "[어린이] 여름방학 독서캠프", date: "2026.08.01 ~ 2026.08.05", target: "초등학생", status: "접수예정", location: "강당", instructor: "이독서", fee: "무료" },
+    { id: 8, library: "은평구립도서관", title: "[성인] 스마트폰 영상 제작 교실", date: "2026.05.15 ~ 2026.06.15", target: "만 19세 이상", status: "접수중", location: "멀티미디어실", instructor: "김영상", fee: "15,000원" },
   ];
 
-  const nextBook = () => setCurrentBookIdx((prev) => (prev + 1) % books.length);
-  const prevBook = () => setCurrentBookIdx((prev) => (prev - 1 + books.length) % books.length);
+  const filteredLectures = lectures.filter(l => lectureTab === '전체' || l.status === lectureTab);
+  const visibleLectures = [];
+  if (filteredLectures.length > 0) {
+    for (let i = 0; i < Math.min(4, filteredLectures.length); i++) {
+      visibleLectures.push(filteredLectures[(currentLectureIdx + i) % filteredLectures.length]);
+    }
+  }
+
+  const handleLectureTab = (tab) => {
+    setLectureTab(tab);
+    setCurrentLectureIdx(0);
+  };
+
+  const nextLecture = () => {
+    if (filteredLectures.length > 0) {
+      setCurrentLectureIdx((prev) => (prev + 1) % filteredLectures.length);
+    }
+  };
+  const prevLecture = () => {
+    if (filteredLectures.length > 0) {
+      setCurrentLectureIdx((prev) => (prev - 1 + filteredLectures.length) % filteredLectures.length);
+    }
+  };
+
+  const nextBook = () => setCurrentBookIdx((prev) => (prev + 1) % displayBooks.length);
+  const prevBook = () => setCurrentBookIdx((prev) => (prev - 1 + displayBooks.length) % displayBooks.length);
 
   const nextSchematic = () => setCurrentSchematicIdx((prev) => (prev + 1) % schematicImages.length);
   const prevSchematic = () => setCurrentSchematicIdx((prev) => (prev - 1 + schematicImages.length) % schematicImages.length);
@@ -314,15 +362,15 @@ function App() {
               </div>
 
               <div className="tabs-container">
-                <button className="tab active">전체</button>
-                <button className="tab">접수중</button>
-                <button className="tab">접수예정</button>
+                <button className={`tab ${lectureTab === '전체' ? 'active' : ''}`} onClick={() => handleLectureTab('전체')}>전체</button>
+                <button className={`tab ${lectureTab === '접수중' ? 'active' : ''}`} onClick={() => handleLectureTab('접수중')}>접수중</button>
+                <button className={`tab ${lectureTab === '접수예정' ? 'active' : ''}`} onClick={() => handleLectureTab('접수예정')}>접수예정</button>
               </div>
 
               <div className="lectures-grid">
-                {lectures.map((lecture) => (
+                {visibleLectures.map((lecture, index) => (
                   <div
-                    key={lecture.id}
+                    key={`${lecture.id}-${index}`}
                     className={`lecture-card ${lecture.status === '접수중' ? 'clickable' : ''}`}
                     onClick={() => {
                       if (lecture.status === '접수중') {
@@ -367,9 +415,9 @@ function App() {
               {/* Pagination/Play Controls for Lectures */}
               <div className="lectures-controls">
                 <div className="control-bar">
-                  <button className="arrow-btn">◀</button>
-                  <button className="pause-btn">⏸</button>
-                  <button className="arrow-btn">▶</button>
+                  <button className="arrow-btn" onClick={prevLecture} aria-label="이전 강좌">◀</button>
+                  <button className="pause-btn" aria-label="일시정지">⏸</button>
+                  <button className="arrow-btn" onClick={nextLecture} aria-label="다음 강좌">▶</button>
                 </div>
               </div>
             </section>
@@ -381,17 +429,17 @@ function App() {
               </div>
 
               <div className="book-tabs">
-                <button className="tab active">추천도서</button>
-                <button className="tab">신착도서</button>
-                <button className="tab">인기도서</button>
+                <button className={`tab ${bookTab === '추천도서' ? 'active' : ''}`} onClick={() => handleBookTab('추천도서')}>추천도서</button>
+                <button className={`tab ${bookTab === '신착도서' ? 'active' : ''}`} onClick={() => handleBookTab('신착도서')}>신착도서</button>
+                <button className={`tab ${bookTab === '인기도서' ? 'active' : ''}`} onClick={() => handleBookTab('인기도서')}>인기도서</button>
               </div>
 
               <div className="book-display">
-                <div className="book-cover-container" key={currentBookIdx}>
-                  <img src={books[currentBookIdx].img} alt={`${books[currentBookIdx].title} 책 표지`} className="book-cover-img fade-in" />
+                <div className="book-cover-container" key={`${bookTab}-${currentBookIdx}`}>
+                  <img src={displayBooks[currentBookIdx].img} alt={`${displayBooks[currentBookIdx].title} 책 표지`} className="book-cover-img fade-in" />
                   <div className="book-meta">
-                    <h4 className="book-title">{books[currentBookIdx].title}</h4>
-                    <p className="book-author">{books[currentBookIdx].author}</p>
+                    <h4 className="book-title">{displayBooks[currentBookIdx].title}</h4>
+                    <p className="book-author">{displayBooks[currentBookIdx].author}</p>
                   </div>
                 </div>
               </div>
@@ -399,7 +447,7 @@ function App() {
               <div className="recommendations-container">
                 <div className="recommendations-grid">
                   {[0, 1, 2].map((offset) => {
-                    const book = books[(currentBookIdx + offset) % books.length];
+                    const book = displayBooks[(currentBookIdx + offset) % displayBooks.length];
                     return (
                       <div key={`${book.title}-${offset}`} className="rec-card fade-in">
                         <img src={book.img} alt={book.title} className="rec-img" />
@@ -425,26 +473,76 @@ function App() {
             {/* Site Footer */}
             <footer className="site-footer">
               <div className="footer-links">
-                <button className="footer-link-item">
-                  <span>도서관 소개</span>
-                  <span className="arrow">›</span>
-                </button>
-                <button className="footer-link-item">
-                  <span>도서관 정책</span>
-                  <span className="arrow">›</span>
-                </button>
-                <button className="footer-link-item">
-                  <span>운영규정 / 이용정책</span>
-                  <span className="arrow">›</span>
-                </button>
-                <button className="footer-link-item">
-                  <span>도서관 네트워크 / 협력</span>
-                  <span className="arrow">›</span>
-                </button>
-                <button className="footer-link-item">
-                  <span>공공도서관 정보</span>
-                  <span className="arrow">›</span>
-                </button>
+                <div className="footer-link-group">
+                  <button className={`footer-link-item ${expandedFooterMenu === '도서관 소개' ? 'expanded' : ''}`} onClick={() => toggleFooterMenu('도서관 소개')}>
+                    <span>도서관 소개</span>
+                    <span className="arrow">{expandedFooterMenu === '도서관 소개' ? '˅' : '›'}</span>
+                  </button>
+                  {expandedFooterMenu === '도서관 소개' && (
+                    <ul className="footer-sub-links fade-in">
+                      <li>인사말</li>
+                      <li>연혁</li>
+                      <li>조직/직원</li>
+                      <li>시설안내</li>
+                    </ul>
+                  )}
+                </div>
+
+                <div className="footer-link-group">
+                  <button className={`footer-link-item ${expandedFooterMenu === '도서관 정책' ? 'expanded' : ''}`} onClick={() => toggleFooterMenu('도서관 정책')}>
+                    <span>도서관 정책</span>
+                    <span className="arrow">{expandedFooterMenu === '도서관 정책' ? '˅' : '›'}</span>
+                  </button>
+                  {expandedFooterMenu === '도서관 정책' && (
+                    <ul className="footer-sub-links fade-in">
+                      <li>장서 개발 정책</li>
+                      <li>정보서비스 정책</li>
+                      <li>개인정보 처리방침</li>
+                    </ul>
+                  )}
+                </div>
+
+                <div className="footer-link-group">
+                  <button className={`footer-link-item ${expandedFooterMenu === '운영규정 / 이용정책' ? 'expanded' : ''}`} onClick={() => toggleFooterMenu('운영규정 / 이용정책')}>
+                    <span>운영규정 / 이용정책</span>
+                    <span className="arrow">{expandedFooterMenu === '운영규정 / 이용정책' ? '˅' : '›'}</span>
+                  </button>
+                  {expandedFooterMenu === '운영규정 / 이용정책' && (
+                    <ul className="footer-sub-links fade-in">
+                      <li>도서관 운영규정</li>
+                      <li>자료실 이용안내</li>
+                      <li>저작권 정책</li>
+                    </ul>
+                  )}
+                </div>
+
+                <div className="footer-link-group">
+                  <button className={`footer-link-item ${expandedFooterMenu === '도서관 네트워크 / 협력' ? 'expanded' : ''}`} onClick={() => toggleFooterMenu('도서관 네트워크 / 협력')}>
+                    <span>도서관 네트워크 / 협력</span>
+                    <span className="arrow">{expandedFooterMenu === '도서관 네트워크 / 협력' ? '˅' : '›'}</span>
+                  </button>
+                  {expandedFooterMenu === '도서관 네트워크 / 협력' && (
+                    <ul className="footer-sub-links fade-in">
+                      <li>협력기관 안내</li>
+                      <li>상호대차 서비스</li>
+                      <li>지역서점 네트워크</li>
+                    </ul>
+                  )}
+                </div>
+
+                <div className="footer-link-group">
+                  <button className={`footer-link-item ${expandedFooterMenu === '공공도서관 정보' ? 'expanded' : ''}`} onClick={() => toggleFooterMenu('공공도서관 정보')}>
+                    <span>공공도서관 정보</span>
+                    <span className="arrow">{expandedFooterMenu === '공공도서관 정보' ? '˅' : '›'}</span>
+                  </button>
+                  {expandedFooterMenu === '공공도서관 정보' && (
+                    <ul className="footer-sub-links fade-in">
+                      <li>관내 도서관 현황</li>
+                      <li>휴관일 안내</li>
+                      <li>도서관 통계</li>
+                    </ul>
+                  )}
+                </div>
               </div>
 
               <div className="footer-social">
